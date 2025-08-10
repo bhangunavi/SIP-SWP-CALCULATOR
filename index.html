@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIP + SWP Calculator</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Comic sans ms, sans-serif;
+        background: linear-gradient(135deg, #e3f2fd 0%, #c5cae9 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        color: #0d3767;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .header p {
+        color: #666;
+        font-size: 1.1rem;
+      }
+
+      .calculator-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      @media (max-width: 768px) {
+        .calculator-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 25px;
+      }
+
+      .card-header h2 {
+        font-size: 1.3rem;
+        color: #333;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+
+      .input-group label {
+        display: block;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+      }
+
+      .input-group input:focus {
+        outline: none;
+        border-color: #1976d2;
+        box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+      }
+
+      .sip-inputs input:focus {
+        border-color: #4caf50;
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+      }
+
+      .swp-inputs input:focus {
+        border-color: #ff9800;
+        box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+      }
+
+      .results-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      .results-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 25px;
+      }
+
+      .results-header h3 {
+        font-size: 1.2rem;
+        color: #333;
+      }
+
+      .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+      }
+
+      .result-item {
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        transition: transform 0.3s ease;
+      }
+
+      .result-item:hover {
+        transform: scale(1.05);
+      }
+
+      .result-item.invested {
+        background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+      }
+
+      .result-item.returns {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+      }
+
+      .result-item.corpus {
+        background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+      }
+
+      .result-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .result-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+      }
+
+      .invested .result-label {
+        color: #2e7d32;
+      }
+      .invested .result-value {
+        color: #1b5e20;
+      }
+      .returns .result-label {
+        color: #1565c0;
+      }
+      .returns .result-value {
+        color: #0d47a1;
+      }
+      .corpus .result-label {
+        color: #7b1fa2;
+      }
+      .corpus .result-value {
+        color: #4a148c;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        margin-top: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      th {
+        background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+        color: white;
+        padding: 15px 12px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.3s ease;
+      }
+
+      tr:hover td {
+        background-color: #f8f9fa;
+      }
+
+      .sustainable {
+        color: #2e7d32;
+        font-weight: 600;
+      }
+
+      .depletes {
+        color: #d32f2f;
+        font-weight: 600;
+      }
+
+      .income-badge {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        color: #1565c0;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .insights-card {
+        background: linear-gradient(135deg, #1976d2 0%, #3f51b5 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-top: 30px;
+      }
+
+      .insights-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        margin-bottom: 20px;
+      }
+
+      .insight-section h4 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      .insight-section ul {
+        list-style: none;
+        opacity: 0.9;
+      }
+
+      .insight-section li {
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+      }
+
+      .recommendation {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 20px;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+      }
+
+      .recommendation p {
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .icon {
+        width: 24px;
+        height: 24px;
+        display: inline-block;
+      }
+
+      .icon-calculator {
+        color: #1976d2;
+      }
+      .icon-trending-up {
+        color: #4caf50;
+      }
+      .icon-trending-down {
+        color: #ff9800;
+      }
+      .icon-target {
+        color: #4caf50;
+      }
+      .icon-rupee {
+        color: #ff9800;
+      }
+      .icon-clock {
+        color: white;
+      }
+
+      .loading {
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-in {
+        animation: slideIn 0.5s ease-out;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <h1>
+          <span class="icon icon-calculator">📊</span>
+          SIP + SWP Calculator
+        </h1>
+        <p>Plan your wealth creation and systematic withdrawal strategy</p>
+      </div>
+
+      <!-- Input Cards -->
+      <div class="calculator-grid">
+        <!-- SIP Card -->
+        <div class="card sip-inputs">
+          <div class="card-header">
+            <span class="icon icon-trending-up">📈</span>
+            <h2>SIP Investment Phase</h2>
+          </div>
+
+          <div class="input-group">
+            <label for="sipAmount">Monthly SIP Amount (₹)</label>
+            <input
+              type="number"
+              id="sipAmount"
+              value="10000"
+              min="1000"
+              step="1000" />
+          </div>
+
+          <div class="input-group">
+            <label for="sipTenure">Investment Period (Years)</label>
+            <input type="number" id="sipTenure" value="20" min="1" max="40" />
+          </div>
+
+          <div class="input-group">
+            <label for="sipRate">Expected Annual Return (%)</label>
+            <input
+              type="number"
+              id="sipRate"
+              value="12"
+              min="1"
+              max="30"
+              step="0.5" />
+          </div>
+        </div>
+
+        <!-- SWP Card -->
+        <div class="card swp-inputs">
+          <div class="card-header">
+            <span class="icon icon-trending-down">📉</span>
+            <h2>SWP Withdrawal Phase</h2>
+          </div>
+
+          <div class="input-group">
+            <label for="swpAmount">Monthly SWP Amount (₹)</label>
+            <input
+              type="number"
+              id="swpAmount"
+              value="8000"
+              min="1000"
+              step="1000" />
+          </div>
+
+          <div class="input-group">
+            <label for="swpTenure">Withdrawal Period (Years)</label>
+            <input type="number" id="swpTenure" value="25" min="1" max="50" />
+          </div>
+
+          <div class="input-group">
+            <label for="swpRate">Expected Annual Return During SWP (%)</label>
+            <input
+              type="number"
+              id="swpRate"
+              value="8"
+              min="1"
+              max="20"
+              step="0.5" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SIP Results -->
+      <div class="results-card">
+        <div class="results-header">
+          <span class="icon icon-target">🎯</span>
+          <h3>SIP Accumulation Results</h3>
+        </div>
+
+        <div class="results-grid">
+          <div class="result-item invested">
+            <div class="result-label">Total Invested</div>
+            <div class="result-value" id="totalInvested">₹0</div>
+          </div>
+          <div class="result-item returns">
+            <div class="result-label">Total Returns</div>
+            <div class="result-value" id="totalReturns">₹0</div>
+          </div>
+          <div class="result-item corpus">
+            <div class="result-label">Final Corpus</div>
+            <div class="result-value" id="finalCorpus">₹0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SWP Analysis Table -->
+      <div class="results-card">
+        <div class="results-header">
+          <span class="icon icon-rupee">₹</span>
+          <h3>SWP Analysis: Different Corpus Scenarios</h3>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Initial Corpus</th>
+                <th>Monthly SWP</th>
+                <th>Total Withdrawn</th>
+                <th>Final Balance</th>
+                <th>Sustainability</th>
+                <th>Annual Withdrawal Rate</th>
+              </tr>
+            </thead>
+            <tbody id="scenarioTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Key Insights -->
+      <div class="insights-card">
+        <div class="insights-header">
+          <span class="icon icon-clock">🕐</span>
+          <h3>Key Insights</h3>
+        </div>
+
+        <div class="insights-grid">
+          <div class="insight-section">
+            <h4>SIP Phase Benefits:</h4>
+            <ul>
+              <li>• Power of compounding over long term</li>
+              <li>• Rupee cost averaging reduces volatility</li>
+              <li>• Disciplined wealth creation approach</li>
+              <li>• Tax-efficient investment strategy</li>
+            </ul>
+          </div>
+
+          <div class="insight-section">
+            <h4>SWP Phase Benefits:</h4>
+            <ul>
+              <li>• Regular income while corpus grows</li>
+              <li>• Tax-efficient withdrawal strategy</li>
+              <li>• Flexibility to adjust withdrawal amounts</li>
+              <li>• Protection against market volatility</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="recommendation">
+          <p>
+            <strong>Recommendation:</strong> For ₹1 crore corpus, a monthly SWP
+            of ₹6,000-8,000 (7.2%-9.6% annual withdrawal rate) typically ensures
+            long-term sustainability while providing regular income. Consider
+            market conditions and adjust accordingly.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Utility functions
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0,
+        }).format(amount);
+      }
+
+      function formatLakhs(amount) {
+        const lakhs = amount / 100000;
+        if (lakhs >= 100) {
+          return `₹${(lakhs / 100).toFixed(2)} Cr`;
+        } else {
+          return `₹${lakhs.toFixed(2)} L`;
+        }
+      }
+
+      // SIP calculation
+      function calculateSIP(amount, tenure, rate) {
+        const monthlyRate = rate / 100 / 12;
+        const months = tenure * 12;
+        const maturityAmount =
+          amount *
+          (((1 + monthlyRate) ** months - 1) / monthlyRate) *
+          (1 + monthlyRate);
+        const totalInvested = amount * months;
+        const totalReturns = maturityAmount - totalInvested;
+
+        return { maturityAmount, totalInvested, totalReturns };
+      }
+
+      // SWP calculation
+      function calculateSWP(corpus, amount, tenure, rate) {
+        const monthlyRate = rate / 100 / 12;
+        const months = tenure * 12;
+        let balance = corpus;
+        let totalWithdrawn = 0;
+
+        for (let i = 1; i <= months && balance > 0; i++) {
+          balance = balance * (1 + monthlyRate) - amount;
+          totalWithdrawn += amount;
+
+          if (balance <= 0) break;
+        }
+
+        return {
+          totalWithdrawn,
+          finalBalance: Math.max(0, balance),
+          corpusLasts: balance > 0,
+        };
+      }
+
+      // Update calculations
+      function updateCalculations() {
+        // Get input values
+        const sipAmount =
+          parseFloat(document.getElementById("sipAmount").value) || 0;
+        const sipTenure =
+          parseFloat(document.getElementById("sipTenure").value) || 0;
+        const sipRate =
+          parseFloat(document.getElementById("sipRate").value) || 0;
+        const swpAmount =
+          parseFloat(document.getElementById("swpAmount").value) || 0;
+        const swpTenure =
+          parseFloat(document.getElementById("swpTenure").value) || 0;
+        const swpRate =
+          parseFloat(document.getElementById("swpRate").value) || 0;
+
+        // Calculate SIP results
+        const sipResults = calculateSIP(sipAmount, sipTenure, sipRate);
+
+        // Update SIP results display
+        document.getElementById("totalInvested").textContent = formatLakhs(
+          sipResults.totalInvested
+        );
+        document.getElementById("totalReturns").textContent = formatLakhs(
+          sipResults.totalReturns
+        );
+        document.getElementById("finalCorpus").textContent = formatLakhs(
+          sipResults.maturityAmount
+        );
+
+        // Generate scenario table
+        const corpusAmounts = [5000000, 7500000, 10000000, 12500000, 15000000]; // 50L, 75L, 1Cr, 1.25Cr, 1.5Cr
+        const tableBody = document.getElementById("scenarioTable");
+        tableBody.innerHTML = "";
+
+        corpusAmounts.forEach((corpus) => {
+          const swpResults = calculateSWP(
+            corpus,
+            swpAmount,
+            swpTenure,
+            swpRate
+          );
+          const annualWithdrawalRate = ((swpAmount * 12) / corpus) * 100;
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+                    <td style="font-weight: 600;">${formatLakhs(corpus)}</td>
+                    <td>${formatCurrency(swpAmount)}</td>
+                    <td>${formatLakhs(swpResults.totalWithdrawn)}</td>
+                    <td>${formatLakhs(swpResults.finalBalance)}</td>
+                    <td class="${
+                      swpResults.corpusLasts ? "sustainable" : "depletes"
+                    }">
+                        ${
+                          swpResults.corpusLasts
+                            ? "✓ Sustainable"
+                            : "⚠ Depletes"
+                        }
+                    </td>
+                    <td>
+                        <span class="income-badge">${annualWithdrawalRate.toFixed(
+                          1
+                        )}% annually</span>
+                    </td>
+                `;
+          tableBody.appendChild(row);
+        });
+      }
+
+      // Add event listeners
+      document.addEventListener("DOMContentLoaded", function () {
+        const inputs = [
+          "sipAmount",
+          "sipTenure",
+          "sipRate",
+          "swpAmount",
+          "swpTenure",
+          "swpRate",
+        ];
+
+        inputs.forEach((inputId) => {
+          const input = document.getElementById(inputId);
+          if (input) {
+            input.addEventListener("input", updateCalculations);
+            input.addEventListener("change", updateCalculations);
+          }
+        });
+
+        // Initial calculation
+        updateCalculations();
+
+        // Add animation to cards
+        const cards = document.querySelectorAll(".card, .results-card");
+        cards.forEach((card, index) => {
+          setTimeout(() => {
+            card.classList.add("animate-in");
+          }, index * 100);
+        });
+      });
+
+      // Add input validation
+      function validateInputs() {
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach((input) => {
+          const min = parseFloat(input.getAttribute("min")) || 0;
+          const max = parseFloat(input.getAttribute("max")) || Infinity;
+          const value = parseFloat(input.value) || 0;
+
+          if (value < min) {
+            input.value = min;
+          } else if (value > max) {
+            input.value = max;
+          }
+        });
+      }
+
+      // Add real-time validation
+      document.addEventListener("DOMContentLoaded", function () {
+        const numberInputs = document.querySelectorAll('input[type="number"]');
+        numberInputs.forEach((input) => {
+          input.addEventListener("blur", validateInputs);
+        });
+      });
+    </script>
+  </body>
+</html>
